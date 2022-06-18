@@ -11,6 +11,7 @@ use eh2telegraph::{
 
 use clap::Parser;
 
+use once_cell::sync::OnceCell;
 use teloxide::{
     adaptors::DefaultParseMode,
     dispatching::update_listeners,
@@ -52,6 +53,8 @@ struct Args {
     config: Option<String>,
 }
 
+static PROCESS_MESSAGE_DATE: OnceCell<chrono::DateTime<chrono::Utc>> = OnceCell::new();
+
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
@@ -59,6 +62,14 @@ async fn main() {
     let timer = tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
         "[month]-[day] [hour]:[minute]:[second]"
     ));
+    // We will only process messages from 1 day earlier.
+    PROCESS_MESSAGE_DATE
+        .set(
+            chrono::Utc::now()
+                .checked_sub_signed(chrono::Duration::days(1))
+                .expect("illegal current date"),
+        )
+        .expect("unable to set global date");
     tracing_subscriber::fmt().with_timer(timer).init();
     tracing::info!("initializing...");
 
@@ -126,6 +137,16 @@ async fn main() {
             Some(message)
         }
     };
+    let time_filter = |message: Message| async move {
+        // Ignore old message.
+        // # Safety:
+        // We already set PROCESS_MESSAGE_DATE.
+        if &message.date > unsafe { PROCESS_MESSAGE_DATE.get_unchecked() } {
+            Some(message)
+        } else {
+            None
+        }
+    };
 
     let bot = Bot::new(base_config.bot_token)
         .parse_mode(ParseMode::MarkdownV2)
@@ -139,6 +160,7 @@ async fn main() {
                     _ => None,
                 }
             }))
+            .chain(dptree::filter_map_async(time_filter))
             .chain(dptree::filter_map_async(permission_filter))
             .branch(
                 dptree::entry()

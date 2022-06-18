@@ -15,7 +15,7 @@ use teloxide::{
     adaptors::DefaultParseMode,
     dispatching::update_listeners,
     error_handlers::IgnoringErrorHandler,
-    prelude2::*,
+    prelude::*,
     types::{AllowedUpdate, ChatPermissions, ParseMode, UpdateKind},
 };
 
@@ -143,7 +143,7 @@ async fn main() {
             .branch(
                 dptree::entry()
                     .chain(dptree::filter(move |message: Message| {
-                        handler.admins.contains(&message.chat.id)
+                        handler.admins.contains(&message.chat.id.0)
                     }))
                     .filter_command::<AdminCommand>()
                     .branch(wrap_endpoint(admin_command_handler)),

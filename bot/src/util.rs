@@ -1,6 +1,6 @@
 use std::{convert::Infallible, ops::ControlFlow, sync::Arc};
 
-use dptree::{di::Injectable, from_fn, Handler};
+use dptree::{di::Injectable, from_fn_with_description, Handler, HandlerDescription};
 
 pub struct PrettyChat<'a>(pub &'a teloxide::types::Chat);
 
@@ -30,19 +30,19 @@ impl<'a> std::fmt::Debug for PrettyChat<'a> {
     }
 }
 
-pub fn wrap_endpoint<'a, F, Input, Output, FnArgs>(
+pub fn wrap_endpoint<'a, F, Input, Output, FnArgs, Descr>(
     f: F,
-) -> Handler<'a, Input, Result<Output, Infallible>, Infallible>
+) -> Handler<'a, Input, Result<Output, Infallible>, Descr>
 where
-    F: Injectable<Input, ControlFlow<Output>, FnArgs> + Send + Sync + 'a,
     Input: Send + Sync + 'a,
     Output: Send + Sync + 'a,
+    Descr: HandlerDescription,
+    F: Injectable<Input, ControlFlow<Output>, FnArgs> + Send + Sync + 'a,
 {
     let f = Arc::new(f);
 
-    from_fn(move |event, _cont| {
+    from_fn_with_description(Descr::endpoint(), move |event, _cont| {
         let f = Arc::clone(&f);
-
         async move {
             let f = f.inject(&event);
             let cf = f().await;

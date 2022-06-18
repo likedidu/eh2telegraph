@@ -14,9 +14,9 @@ use eh2telegraph::{
 use reqwest::Url;
 use teloxide::{
     adaptors::DefaultParseMode,
-    prelude2::*,
+    prelude::*,
     utils::{
-        command::BotCommand,
+        command::BotCommands,
         markdown::{code_inline, escape, link},
     },
 };
@@ -27,7 +27,7 @@ use crate::{ok_or_break, util::PrettyChat};
 const MIN_SIMILARITY: u8 = 70;
 const MIN_SIMILARITY_PRIVATE: u8 = 50;
 
-#[derive(BotCommand, Clone)]
+#[derive(BotCommands, Clone)]
 #[command(
     rename = "lowercase",
     description = "\
@@ -55,7 +55,7 @@ pub enum Command {
     Sync(String),
 }
 
-#[derive(BotCommand, Clone)]
+#[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "Command for admins")]
 pub enum AdminCommand {
     #[command(description = "Delete cache with given key.")]
@@ -96,7 +96,7 @@ where
         match command {
             Command::Help => {
                 let _ = bot
-                    .send_message(msg.chat.id, escape(&Command::descriptions()))
+                    .send_message(msg.chat.id, escape(&Command::descriptions().to_string()))
                     .reply_to_message_id(msg.id)
                     .await;
             }

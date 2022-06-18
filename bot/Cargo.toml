@@ -7,8 +7,8 @@ version = "0.1.4"
 eh2telegraph = {path = "../eh2telegraph"}
 
 anyhow = "1"
-clap = {version = "3", features = ["derive"]}
 chrono = "0.4"
+clap = {version = "3", features = ["derive"]}
 dptree = "0.2"
 once_cell = "1"
 regex = "1"
@@ -22,4 +22,4 @@ tracing = "0.1"
 tracing-subscriber = {version = "0.3", features = ["local-time", "parking_lot", "time"]}
 
 [build-dependencies]
-vergen = {version = "7", default_features = false, features = ["build", "cargo", "rustc"]}
+vergen = {version = "7", default_features = false, features = ["build", "cargo", "rustc", "git"]}

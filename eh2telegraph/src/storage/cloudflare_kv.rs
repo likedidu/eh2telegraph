@@ -50,7 +50,7 @@ impl<T> KVStorage<T> for CFStorage
 where
     T: DeserializeOwned + Serialize + Send + Sync,
 {
-    type GetFuture<'a> = impl Future<Output = anyhow::Result<Option<T>>> where Self: 'a;
+    type GetFuture<'a> = impl Future<Output = anyhow::Result<Option<T>>> + 'a where Self: 'a;
     fn get<'a>(&'a self, key: &'a str) -> Self::GetFuture<'_> {
         async move {
             self.0
@@ -61,12 +61,12 @@ where
         }
     }
 
-    type SetFuture<'a> = impl Future<Output = anyhow::Result<()>> where Self: 'a;
+    type SetFuture<'a> = impl Future<Output = anyhow::Result<()>> + 'a where Self: 'a, T: 'a;
     fn set<'a>(&self, key: String, value: T, _expire_ttl: Option<usize>) -> Self::SetFuture<'_> {
         async move { self.0.put(&key, &value).await.map_err(Into::into) }
     }
 
-    type DeleteFuture<'a> = impl Future<Output = anyhow::Result<()>> where Self: 'a;
+    type DeleteFuture<'a> = impl Future<Output = anyhow::Result<()>> + 'a where Self: 'a;
     fn delete<'a>(&'a self, key: &'a str) -> Self::DeleteFuture<'_> {
         async move { self.0.delete(key).await.map_err(Into::into) }
     }

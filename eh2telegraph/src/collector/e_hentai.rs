@@ -71,7 +71,7 @@ impl EHCollector {
 impl Collector for EHCollector {
     type FetchError = anyhow::Error;
     type FetchFuture<'a> =
-        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>>;
+        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>> + 'a;
 
     type StreamError = anyhow::Error;
     type ImageStream = EHImageStream;

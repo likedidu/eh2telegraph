@@ -83,7 +83,7 @@ impl EXCollector {
 impl Collector for EXCollector {
     type FetchError = anyhow::Error;
     type FetchFuture<'a> =
-        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>>;
+        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>> + 'a;
 
     type StreamError = anyhow::Error;
     type ImageStream = EXImageStream;

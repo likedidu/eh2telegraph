@@ -67,7 +67,7 @@ impl SaucenaoSearcher {
         }
     }
 
-    async fn search(client: &reqwest::Client, file: Part) -> anyhow::Result<SaucenaoOutput> {
+    async fn do_search(client: &reqwest::Client, file: Part) -> anyhow::Result<SaucenaoOutput> {
         let response = client
             .post("https://saucenao.com/search.php")
             .multipart(multipart::Form::new().part("file", file))
@@ -115,15 +115,18 @@ impl IntoIterator for SaucenaoOutput {
     }
 }
 
-impl ImageSearcher for SaucenaoSearcher {
+impl<T> ImageSearcher<T> for SaucenaoSearcher
+where
+    T: Into<Cow<'static, [u8]>>,
+{
     type SeacheError = anyhow::Error;
     type SearchOutput = SaucenaoOutput;
-    type FetchFuture<T> = impl Future<Output = Result<Self::SearchOutput, Self::SeacheError>>;
+    type FetchFuture = impl Future<Output = Result<Self::SearchOutput, Self::SeacheError>>;
 
-    fn search<T: Into<Cow<'static, [u8]>>>(&self, data: T) -> Self::FetchFuture<T> {
+    fn search(&self, data: T) -> Self::FetchFuture {
         let file_part = Part::bytes(data).file_name("image.jpg");
         let client = self.client.clone();
-        async move { Self::search(&client, file_part).await }
+        async move { Self::do_search(&client, file_part).await }
     }
 }
 

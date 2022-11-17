@@ -159,7 +159,7 @@ impl GhostClient {
 
             // apply resolve
             for (domain, addr) in mapping {
-                builder = builder.resolve(*domain, *addr);
+                builder = builder.resolve(domain, *addr);
             }
 
             // not add preconfigured tls

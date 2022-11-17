@@ -39,9 +39,8 @@ pub struct AlbumMeta {
 /// memory VM, it will keep only a small amount in memory.
 pub trait Collector {
     type FetchError;
-    type FetchFuture<'a>: std::future::Future<
-        Output = Result<(AlbumMeta, Self::ImageStream), Self::FetchError>,
-    >
+    type FetchFuture<'a>: std::future::Future<Output = Result<(AlbumMeta, Self::ImageStream), Self::FetchError>>
+        + 'a
     where
         Self: 'a;
 

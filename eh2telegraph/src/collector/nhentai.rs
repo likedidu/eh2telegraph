@@ -1,5 +1,8 @@
 /// nhentai collector.
 /// Host matching: nhentai.to or nhentai.net
+///
+/// Since nhentai.net always enable CloudFlare Firewall, so we will
+/// use nhentai.xxx(but there is about 1~2 days syncing latency).
 use again::RetryPolicy;
 use ipnet::Ipv6Net;
 use regex::Regex;
@@ -17,14 +20,15 @@ use super::{AlbumMeta, Collector, ImageData, ImageMeta};
 
 lazy_static::lazy_static! {
     static ref TITLE_RE: Regex = Regex::new(r#"<span class="pretty">(.*?)</span>"#).unwrap();
-    static ref PAGE_RE: Regex = Regex::new(r#"<noscript><img src="(https://t\d?\.nhentai\.net/galleries/\d+/\d+t\.\w+)"#).unwrap();
+    // static ref PAGE_RE: Regex = Regex::new(r#"<noscript><img src="(https://t\d?\.nhentai\.net/galleries/\d+/\d+t\.\w+)"#).unwrap();
+    static ref PAGE_RE: Regex = Regex::new(r#"<noscript><img src="(https://cdn.nhentai.xxx/g/\d+/\d+t\.\w+)"#).unwrap();
 
     static ref RETRY_POLICY: RetryPolicy = RetryPolicy::fixed(Duration::from_millis(200))
         .with_max_retries(5)
         .with_jitter(true);
 }
 
-const DOMAIN_LIST: [&str; 10] = [
+const DOMAIN_LIST: [&str; 12] = [
     "nhentai.net",
     "i.nhentai.net",
     "i2.nhentai.net",
@@ -35,6 +39,8 @@ const DOMAIN_LIST: [&str; 10] = [
     "i7.nhentai.net",
     "i8.nhentai.net",
     "i9.nhentai.net",
+    "nhentai.xxx",
+    "cdn.nhentai.xxx",
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -63,7 +69,7 @@ impl NHCollector {
 impl Collector for NHCollector {
     type FetchError = anyhow::Error;
     type FetchFuture<'a> =
-        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>>;
+        impl std::future::Future<Output = anyhow::Result<(AlbumMeta, Self::ImageStream)>> + 'a;
 
     type StreamError = anyhow::Error;
     type ImageStream = NHImageStream;
@@ -85,7 +91,8 @@ impl Collector for NHCollector {
                     return Err(anyhow::anyhow!("invalid input path({path}), gallery url is expected(like https://nhentai.net/g/333678)"));
                 }
             };
-            let url = format!("https://nhentai.net/g/{album_id}");
+            // let url = format!("https://nhentai.net/g/{album_id}");
+            let url = format!("https://nhentai.xxx/g/{album_id}");
             tracing::info!("[nhentai] process {url}");
 
             // clone client to force changing ip

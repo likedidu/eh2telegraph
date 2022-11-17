@@ -13,7 +13,8 @@ pub trait KVStorage<V> {
 
     type SetFuture<'a>: Future<Output = anyhow::Result<()>> + Send
     where
-        Self: 'a;
+        Self: 'a,
+        V: 'a;
     fn set(&self, key: String, value: V, expire_ttl: Option<usize>) -> Self::SetFuture<'_>;
 
     type DeleteFuture<'a>: Future<Output = anyhow::Result<()>> + Send

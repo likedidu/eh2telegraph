@@ -1,12 +1,12 @@
 pub mod f_hash;
 pub mod saucenao;
 
-pub trait ImageSearcher {
+pub trait ImageSearcher<T> {
     type SeacheError;
     type SearchOutput;
-    type FetchFuture<T>: std::future::Future<Output = Result<Self::SearchOutput, Self::SeacheError>>;
+    type FetchFuture: std::future::Future<Output = Result<Self::SearchOutput, Self::SeacheError>>;
 
-    fn search<T: Into<std::borrow::Cow<'static, [u8]>>>(&self, data: T) -> Self::FetchFuture<T>;
+    fn search(&self, data: T) -> Self::FetchFuture;
 }
 
 #[cfg(test)]

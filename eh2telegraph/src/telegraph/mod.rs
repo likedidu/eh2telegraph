@@ -235,7 +235,7 @@ mod tests {
             author_url: Some("https://t.co".to_string()),
         };
         let page = telegraph.create_page(&page).await.unwrap();
-        println!("test page: {:?}", page);
+        println!("test page: {page:?}");
     }
 
     #[ignore]
@@ -279,6 +279,6 @@ mod tests {
             author_url: None,
         };
         let page = telegraph.create_page(&page).await.unwrap();
-        println!("test page: {:?}", page);
+        println!("test page: {page:?}");
     }
 }

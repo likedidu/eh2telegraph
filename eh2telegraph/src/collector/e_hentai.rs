@@ -228,7 +228,7 @@ mod tests {
             .fetch("/g/2122174/fd2525031e".to_string())
             .await
             .unwrap();
-        println!("album: {:?}", album);
+        println!("album: {album:?}");
 
         let maybe_first_image = image_stream.next().unwrap().await;
         if let Ok((meta, data)) = maybe_first_image {

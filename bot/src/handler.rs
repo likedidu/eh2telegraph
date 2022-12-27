@@ -29,7 +29,7 @@ const MIN_SIMILARITY_PRIVATE: u8 = 50;
 
 #[derive(BotCommands, Clone)]
 #[command(
-    rename = "lowercase",
+    rename_rule = "lowercase",
     description = "\
     This is a gallery synchronization robot that is convenient for users to view pictures directly in Telegram.\n\
     这是一个方便用户直接在 Telegram 里看图的画廊同步机器人。\n\
@@ -56,7 +56,7 @@ pub enum Command {
 }
 
 #[derive(BotCommands, Clone)]
-#[command(rename = "lowercase", description = "Command for admins")]
+#[command(rename_rule = "lowercase", description = "Command for admins")]
 pub enum AdminCommand {
     #[command(description = "Delete cache with given key.")]
     Delete(String),
@@ -89,7 +89,7 @@ where
     /// Executed when a command comes in and parsed successfully.
     pub async fn respond_cmd(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
         command: Command,
     ) -> ControlFlow<()> {
@@ -149,7 +149,7 @@ where
 
     pub async fn respond_admin_cmd(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
         command: AdminCommand,
     ) -> ControlFlow<()> {
@@ -167,7 +167,7 @@ where
 
     pub async fn respond_text(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
     ) -> ControlFlow<()> {
         let maybe_link = {
@@ -217,7 +217,7 @@ where
 
     pub async fn respond_caption(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
     ) -> ControlFlow<()> {
         let caption_entities = msg.caption_entities();
@@ -276,7 +276,7 @@ where
 
     pub async fn respond_photo(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
     ) -> ControlFlow<()> {
         let first_photo = match msg.photo().and_then(|x| x.first()) {
@@ -286,9 +286,9 @@ where
             }
         };
 
-        let f = ok_or_break!(bot.get_file(&first_photo.file_id).await);
-        let mut buf: Vec<u8> = Vec::with_capacity(f.file_size as usize);
-        ok_or_break!(teloxide::net::Download::download_file(&bot, &f.file_path, &mut buf).await);
+        let f = ok_or_break!(bot.get_file(&first_photo.file.id).await);
+        let mut buf: Vec<u8> = Vec::with_capacity(f.size as usize);
+        ok_or_break!(teloxide::net::Download::download_file(&bot, &f.path, &mut buf).await);
         let search_result: SaucenaoOutput = ok_or_break!(self.searcher.search(buf).await);
 
         let mut url_sim = None;
@@ -348,7 +348,7 @@ where
 
     pub async fn respond_default(
         &'static self,
-        bot: AutoSend<DefaultParseMode<Bot>>,
+        bot: DefaultParseMode<Bot>,
         msg: Message,
     ) -> ControlFlow<()> {
         if msg.chat.is_private() {

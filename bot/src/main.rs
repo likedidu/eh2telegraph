@@ -97,29 +97,26 @@ async fn main() {
     let handler = Box::leak(Box::new(Handler::new(synchronizer, admins))) as &Handler<_>;
 
     // === Bot related ===
-    let command_handler = move |bot: AutoSend<DefaultParseMode<Bot>>,
-                                message: Message,
-                                command: Command| async move {
+    let command_handler = move |bot: DefaultParseMode<Bot>, message: Message, command: Command| async move {
         handler.respond_cmd(bot, message, command).await
     };
-    let admin_command_handler = move |bot: AutoSend<DefaultParseMode<Bot>>,
-                                      message: Message,
-                                      command: AdminCommand| async move {
-        handler.respond_admin_cmd(bot, message, command).await
-    };
-    let text_handler = move |bot: AutoSend<DefaultParseMode<Bot>>, message: Message| async move {
+    let admin_command_handler =
+        move |bot: DefaultParseMode<Bot>, message: Message, command: AdminCommand| async move {
+            handler.respond_admin_cmd(bot, message, command).await
+        };
+    let text_handler = move |bot: DefaultParseMode<Bot>, message: Message| async move {
         handler.respond_text(bot, message).await
     };
-    let caption_handler = move |bot: AutoSend<DefaultParseMode<Bot>>, message: Message| async move {
+    let caption_handler = move |bot: DefaultParseMode<Bot>, message: Message| async move {
         handler.respond_caption(bot, message).await
     };
-    let photo_handler = move |bot: AutoSend<DefaultParseMode<Bot>>, message: Message| async move {
+    let photo_handler = move |bot: DefaultParseMode<Bot>, message: Message| async move {
         handler.respond_photo(bot, message).await
     };
-    let default_handler = move |bot: AutoSend<DefaultParseMode<Bot>>, message: Message| async move {
+    let default_handler = move |bot: DefaultParseMode<Bot>, message: Message| async move {
         handler.respond_default(bot, message).await
     };
-    let permission_filter = |bot: AutoSend<DefaultParseMode<Bot>>, message: Message| async move {
+    let permission_filter = |bot: DefaultParseMode<Bot>, message: Message| async move {
         // If the bot is blocked, we will leave chat and not respond.
         let blocked = message
             .chat
@@ -148,9 +145,7 @@ async fn main() {
         }
     };
 
-    let bot = Bot::new(base_config.bot_token)
-        .parse_mode(ParseMode::MarkdownV2)
-        .auto_send();
+    let bot = Bot::new(base_config.bot_token).parse_mode(ParseMode::MarkdownV2);
     let mut bot_dispatcher = Dispatcher::builder(
         bot.clone(),
         dptree::entry()
@@ -219,14 +214,12 @@ async fn main() {
         Box::pin(async {})
     }))
     .error_handler(std::sync::Arc::new(IgnoringErrorHandler))
+    .enable_ctrlc_handler()
     .build();
-    bot_dispatcher.setup_ctrlc_handler();
-    let bot_listener = update_listeners::polling(
-        bot,
-        Some(std::time::Duration::from_secs(10)),
-        None,
-        Some(vec![AllowedUpdate::Message]),
-    );
+    let bot_listener = update_listeners::Polling::builder(bot)
+        .allowed_updates(vec![AllowedUpdate::Message])
+        .timeout(std::time::Duration::from_secs(10))
+        .build();
 
     tracing::info!("initializing finished, bot is running");
     bot_dispatcher

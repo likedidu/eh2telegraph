@@ -235,13 +235,13 @@ mod tests {
             ipb_member_id: "balabala".to_string(),
             igneous: "balabala".to_string(),
         };
-        println!("config {:#?}", config);
+        println!("config {config:#?}");
         let collector = EXCollector::new(&config, ProxiedClient::default()).unwrap();
         let (album, mut image_stream) = collector
             .fetch("/g/2129939/01a6e086b9".to_string())
             .await
             .unwrap();
-        println!("album: {:?}", album);
+        println!("album: {album:?}");
 
         let maybe_first_image = image_stream.next().unwrap().await;
         if let Ok((meta, data)) = maybe_first_image {
@@ -258,11 +258,11 @@ mod tests {
             ipb_member_id: "balabala".to_string(),
             igneous: "balabala".to_string(),
         };
-        println!("config {:#?}", config);
+        println!("config {config:#?}");
         let collector = EXCollector::new(&config, ProxiedClient::default()).unwrap();
         let output = collector.fetch("/g/2129939/00000".to_string()).await;
         assert!(output.is_err());
-        println!("output err {:?}", output);
+        println!("output err {output:?}");
     }
 
     #[ignore]

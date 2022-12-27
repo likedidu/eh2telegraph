@@ -91,6 +91,7 @@ impl Collector for NHCollector {
                     return Err(anyhow::anyhow!("invalid input path({path}), gallery url is expected(like https://nhentai.net/g/333678)"));
                 }
             };
+            // Note: Since nh enables CF firewall, we use nhentai.xxx instead.
             // let url = format!("https://nhentai.net/g/{album_id}");
             let url = format!("https://nhentai.xxx/g/{album_id}");
             tracing::info!("[nhentai] process {url}");
@@ -118,6 +119,11 @@ impl Collector for NHCollector {
                     thumb_url
                         .replace("https://t", "https://i")
                         .replace("t.", ".")
+                        // We still use nh CDN since nhentai.xxx lost images...
+                        .replace(
+                            "https://cdn.nhentai.xxx/g",
+                            "https://i5.nhentai.net/galleries",
+                        )
                 })
                 .collect::<Vec<_>>()
                 .into_iter();

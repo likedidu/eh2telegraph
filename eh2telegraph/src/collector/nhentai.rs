@@ -5,6 +5,7 @@
 /// use nhentai.xxx(but there is about 1~2 days syncing latency).
 use again::RetryPolicy;
 use ipnet::Ipv6Net;
+use rand::seq::SliceRandom;
 use regex::Regex;
 use reqwest::Response;
 use std::time::Duration;
@@ -41,6 +42,14 @@ const DOMAIN_LIST: [&str; 12] = [
     "i9.nhentai.net",
     "nhentai.xxx",
     "cdn.nhentai.xxx",
+];
+
+const NH_CDN_LIST: [&str; 5] = [
+    "https://i.nhentai.net/galleries",
+    "https://i2.nhentai.net/galleries",
+    "https://i3.nhentai.net/galleries",
+    "https://i5.nhentai.net/galleries",
+    "https://i7.nhentai.net/galleries",
 ];
 
 #[derive(Debug, Clone, Default)]
@@ -116,14 +125,14 @@ impl Collector for NHCollector {
                         .get(1)
                         .expect("regexp is matched but no group 1 found")
                         .as_str();
+                    let cdn = NH_CDN_LIST
+                        .choose(&mut rand::thread_rng())
+                        .expect("empty CDN list");
                     thumb_url
                         .replace("https://t", "https://i")
                         .replace("t.", ".")
                         // We still use nh CDN since nhentai.xxx lost images...
-                        .replace(
-                            "https://cdn.nhentai.xxx/g",
-                            "https://i5.nhentai.net/galleries",
-                        )
+                        .replace("https://cdn.nhentai.xxx/g", cdn)
                 })
                 .collect::<Vec<_>>()
                 .into_iter();

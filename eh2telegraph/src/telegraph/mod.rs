@@ -17,8 +17,10 @@ use crate::http_proxy::HttpRequestBuilder;
 
 use self::{
     error::{ApiResult, UploadResult},
-    types::{MediaInfo, Page, PageCreate, PageEdit},
+    types::{MediaInfo, Node, Page, PageCreate, PageEdit},
 };
+
+const TITLE_LENGTH_MAX: usize = 200;
 
 #[derive(Debug, Clone)]
 pub struct Telegraph<T, C = Client> {
@@ -119,15 +121,38 @@ where
     /// Create page.
     pub async fn create_page(&self, page: &PageCreate) -> Result<Page, TelegraphError> {
         #[derive(Serialize)]
+        struct PageCreateShadow<'a> {
+            /// Title of the page.
+            pub title: &'a str,
+            /// Content of the page.
+            #[serde(with = "serde_with::json::nested")]
+            pub content: &'a Vec<Node>,
+
+            /// Optional. Name of the author, displayed below the title.
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub author_name: &'a Option<String>,
+            /// Optional. Profile link, opened when users click on the author's name below the title.
+            /// Can be any link, not necessarily to a Telegram profile or channel.
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub author_url: &'a Option<String>,
+        }
+
+        #[derive(Serialize)]
         struct PagePostWithToken<'a> {
             access_token: &'a str,
             #[serde(flatten)]
-            page: &'a PageCreate,
+            page: &'a PageCreateShadow<'a>,
         }
 
+        let title = &page.title[..page.title.len().min(TITLE_LENGTH_MAX)];
         let to_post = PagePostWithToken {
             access_token: self.access_token.token(),
-            page,
+            page: &PageCreateShadow {
+                title,
+                content: &page.content,
+                author_name: &page.author_name,
+                author_url: &page.author_url,
+            },
         };
         execute!(self
             .client
@@ -138,15 +163,41 @@ where
     /// Edit page.
     pub async fn edit_page(&self, page: &PageEdit) -> Result<Page, TelegraphError> {
         #[derive(Serialize)]
+        struct PageEditShadow<'a> {
+            /// Title of the page.
+            pub title: &'a str,
+            /// Path to the page.
+            pub path: &'a str,
+            /// Content of the page.
+            #[serde(with = "serde_with::json::nested")]
+            pub content: &'a Vec<Node>,
+
+            /// Optional. Name of the author, displayed below the title.
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub author_name: &'a Option<String>,
+            /// Optional. Profile link, opened when users click on the author's name below the title.
+            /// Can be any link, not necessarily to a Telegram profile or channel.
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub author_url: &'a Option<String>,
+        }
+
+        #[derive(Serialize)]
         struct PageEditWithToken<'a> {
             access_token: &'a str,
             #[serde(flatten)]
-            page: &'a PageEdit,
+            page: &'a PageEditShadow<'a>,
         }
 
+        let title = &page.title[..page.title.len().min(TITLE_LENGTH_MAX)];
         let to_post = PageEditWithToken {
             access_token: self.access_token.select_token(&page.path),
-            page,
+            page: &PageEditShadow {
+                title,
+                path: &page.path,
+                content: &page.content,
+                author_name: &page.author_name,
+                author_url: &page.author_url,
+            },
         };
         execute!(self
             .client

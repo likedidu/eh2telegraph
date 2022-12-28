@@ -80,7 +80,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "bot"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "anyhow",
  "chrono",
@@ -178,12 +178,12 @@ dependencies = [
 
 [[package]]
 name = "cloudflare-kv-proxy"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1896e84b3eba9e6957cdb2b8bc4bc43e1ee56ce688377b3f0570d8926e955b7"
+checksum = "4d737ecb4574408dc3b5d75c1624e1967ba64af063f0b509b7f3859cfef14eb8"
 dependencies = [
  "coarsetime",
- "hashlink 0.7.0",
+ "hashlink",
  "parking_lot 0.12.1",
  "reqwest",
  "serde",
@@ -347,7 +347,7 @@ dependencies = [
  "cloudflare-kv-proxy",
  "derive_more",
  "futures",
- "hashlink 0.8.1",
+ "hashlink",
  "ipnet",
  "lazy_static",
  "once_cell",
@@ -615,15 +615,6 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
-dependencies = [
- "ahash",
-]
-
-[[package]]
-name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
@@ -633,20 +624,11 @@ dependencies = [
 
 [[package]]
 name = "hashlink"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7249a3129cbc1ffccd74857f81464a323a152173cdb134e0fd81bc803b29facf"
-dependencies = [
- "hashbrown 0.11.2",
-]
-
-[[package]]
-name = "hashlink"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69fe1fcf8b4278d860ad0548329f892a3631fb63f82574df68275f34cdbe0ffa"
 dependencies = [
- "hashbrown 0.12.3",
+ "hashbrown",
 ]
 
 [[package]]
@@ -795,7 +777,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1885e79c1fc4b10f0e172c475f458b7f7b93061064d98c3293e98c5ba0c8b399"
 dependencies = [
  "autocfg",
- "hashbrown 0.12.3",
+ "hashbrown",
 ]
 
 [[package]]

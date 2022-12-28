@@ -8,11 +8,13 @@
 
 pub const UA: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36";
 const CONFIG_KEY: &str = "http";
+const TIMTOUT: Duration = Duration::from_secs(30);
 
 use std::{
     net::{IpAddr, Ipv6Addr, SocketAddr},
     ops::{Deref, DerefMut},
     sync::Arc,
+    time::Duration,
 };
 
 use ipnet::Ipv6Net;
@@ -139,7 +141,7 @@ impl GhostClient {
         mapping: &[(&'static str, SocketAddr)],
         headers: Option<header::HeaderMap>,
     ) -> reqwest::Client {
-        let mut builder = reqwest::Client::builder().user_agent(UA);
+        let mut builder = reqwest::Client::builder().timeout(TIMTOUT).user_agent(UA);
 
         if let Some(headers) = headers {
             builder = builder.default_headers(headers);

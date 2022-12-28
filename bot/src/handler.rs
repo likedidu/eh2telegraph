@@ -155,11 +155,13 @@ where
     ) -> ControlFlow<()> {
         match command {
             AdminCommand::Delete(key) => {
-                let _ = self.synchronizer.delete_cache(&key).await;
-                let _ = bot
-                    .send_message(msg.chat.id, escape(&format!("Key {key} deleted.")))
-                    .reply_to_message_id(msg.id)
-                    .await;
+                tokio::spawn(async move {
+                    let _ = self.synchronizer.delete_cache(&key).await;
+                    let _ = bot
+                        .send_message(msg.chat.id, escape(&format!("Key {key} deleted.")))
+                        .reply_to_message_id(msg.id)
+                        .await;
+                });
                 ControlFlow::BREAK
             }
         }

@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use reqwest::header::HeaderValue;
 
 use crate::{
@@ -6,6 +8,7 @@ use crate::{
 };
 
 const CONFIG_KEY: &str = "proxy";
+const TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(serde::Deserialize, Clone, Debug, Default)]
 struct ProxyConfig {
@@ -39,6 +42,7 @@ impl ProxiedClient {
             proxy,
             inner: reqwest::Client::builder()
                 .user_agent(UA)
+                .timeout(TIMEOUT)
                 .build()
                 .expect("unable to build reqwest client"),
         }
@@ -60,6 +64,7 @@ impl ProxiedClient {
         Self {
             inner: reqwest::Client::builder()
                 .user_agent(UA)
+                .timeout(TIMEOUT)
                 .default_headers(headers)
                 .build()
                 .expect("unable to build reqwest client"),

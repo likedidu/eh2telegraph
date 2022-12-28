@@ -27,6 +27,7 @@ lazy_static::lazy_static! {
         .with_max_retries(5)
         .with_jitter(true);
 }
+const TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Debug, Clone, Default)]
 pub struct EHCollector {
@@ -47,7 +48,11 @@ impl EHCollector {
                 .with_default_headers(request_headers)
                 .with_cf_resolve(&["e-hentai.org"])
                 .build(prefix),
-            raw_client: reqwest::Client::builder().user_agent(UA).build().unwrap(),
+            raw_client: reqwest::Client::builder()
+                .timeout(TIMEOUT)
+                .user_agent(UA)
+                .build()
+                .unwrap(),
         }
     }
 
@@ -63,7 +68,11 @@ impl EHCollector {
                 .with_default_headers(request_headers)
                 .with_cf_resolve(&["e-hentai.org"])
                 .build_from_config()?,
-            raw_client: reqwest::Client::builder().user_agent(UA).build().unwrap(),
+            raw_client: reqwest::Client::builder()
+                .timeout(TIMEOUT)
+                .user_agent(UA)
+                .build()
+                .unwrap(),
         })
     }
 }

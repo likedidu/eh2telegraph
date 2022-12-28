@@ -29,6 +29,7 @@ lazy_static::lazy_static! {
         .with_jitter(true);
 }
 const CONFIG_KEY: &str = "exhentai";
+const TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Debug, Clone)]
 pub struct EXCollector {
@@ -61,6 +62,7 @@ impl EXCollector {
                 reqwest::Client::builder()
                     .user_agent(UA)
                     .default_headers(request_headers.clone())
+                    .timeout(TIMEOUT)
                     .build()
                     .expect("build reqwest client failed")
             },

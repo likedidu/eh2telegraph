@@ -9,6 +9,7 @@ use crate::config;
 use super::KVStorage;
 
 const CONFIG_KEY: &str = "worker_kv";
+const TIMEOUT: Duration = Duration::from_secs(3);
 
 #[derive(Debug, Deserialize)]
 pub struct CFConfig {
@@ -29,7 +30,7 @@ impl CFStorage {
         expire: Duration,
     ) -> Result<Self, ClientError> {
         Ok(Self(Arc::new(Client::new(
-            endpoint, token, cache_size, expire,
+            endpoint, token, TIMEOUT, cache_size, expire,
         )?)))
     }
 

@@ -125,14 +125,11 @@ impl Collector for NHCollector {
                         .get(1)
                         .expect("regexp is matched but no group 1 found")
                         .as_str();
-                    let cdn = NH_CDN_LIST
-                        .choose(&mut rand::thread_rng())
-                        .expect("empty CDN list");
-                    thumb_url
-                        .replace("https://t", "https://i")
-                        .replace("t.", ".")
-                        // We still use nh CDN since nhentai.xxx lost images...
-                        .replace("https://cdn.nhentai.xxx/g", cdn)
+                    ImageURL(
+                        thumb_url
+                            .replace("https://t", "https://i")
+                            .replace("t.", "."),
+                    )
                 })
                 .collect::<Vec<_>>()
                 .into_iter();
@@ -153,18 +150,31 @@ impl Collector for NHCollector {
 }
 
 #[derive(Debug)]
+struct ImageURL(String);
+
+impl ImageURL {
+    fn raw(&self) -> &str {
+        &self.0
+    }
+
+    fn fallback(&self) -> String {
+        let cdn = NH_CDN_LIST
+            .choose(&mut rand::thread_rng())
+            .expect("empty CDN list");
+        self.0.replace("https://cdn.nhentai.xxx/g", cdn)
+    }
+}
+
+#[derive(Debug)]
 pub struct NHImageStream {
     client: GhostClient,
-    image_urls: std::vec::IntoIter<String>,
+    image_urls: std::vec::IntoIter<ImageURL>,
 }
 
 impl NHImageStream {
-    async fn load_image(
-        client: GhostClient,
-        link: String,
-    ) -> anyhow::Result<(ImageMeta, ImageData)> {
+    async fn load_image(client: GhostClient, link: &str) -> anyhow::Result<(ImageMeta, ImageData)> {
         let image_data = RETRY_POLICY
-            .retry(|| async { get_bytes(&client, &link).await })
+            .retry(|| async { get_bytes(&client, link).await })
             .await?;
 
         tracing::trace!(
@@ -172,8 +182,8 @@ impl NHImageStream {
             image_data.len()
         );
         let meta = ImageMeta {
-            id: link.clone(),
-            url: link,
+            id: link.to_string(),
+            url: link.to_string(),
             description: None,
         };
         Ok((meta, image_data))
@@ -188,7 +198,15 @@ impl AsyncStream for NHImageStream {
     fn next(&mut self) -> Option<Self::Future> {
         let link = self.image_urls.next()?;
         let client = self.client.clone();
-        Some(async move { Self::load_image(client, link).await })
+        Some(async move {
+            match Self::load_image(client.clone(), link.raw()).await {
+                Ok(r) => Ok(r),
+                Err(e) => {
+                    tracing::error!("fallback for nh image {link:?}: {e}");
+                    Self::load_image(client, &link.fallback()).await
+                }
+            }
+        })
     }
 
     #[inline]

@@ -20,6 +20,7 @@ time = {version = "=0.3.17", features = ["local-offset", "std", "macros"]}
 tokio = {version = "1", default-features = false, features = ["rt-multi-thread", "macros", "net", "sync", "time", "parking_lot"]}
 tracing = "0.1"
 tracing-subscriber = {version = "0.3", features = ["local-time", "parking_lot", "time"]}
+openssl = { version = "0.10", features = ["vendored"] }
 
 [build-dependencies]
 vergen = {version = "7", default_features = false, features = ["build", "cargo", "rustc"]}
